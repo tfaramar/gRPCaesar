@@ -3,28 +3,17 @@ syntax = "proto3"; //define version of protocol buffer
 package cipher; 
 
 service CipherService {
-    rpc EncodeMessage (Message) returns (EncodedMessage);
-    rpc DecodeMessage (Message) returns (DecodedMessage);
+    rpc EncodeMessage (Input) returns (Message) {}
+    rpc DecodeMessage (Input) returns (Message) {}
 }
 
-message Text {
+message Input {
     string text = 1;
-}
-
-message Shift {
-    int32 shift = 1;
+    int32 shift = 2;
 }
 
 message Message {
-    Text text = 1;
-    Shift shift = 2;
-}
-
-message EncodedMessage {
     string msg = 1;
 }
 
-message DecodedMessage {
-    string msg = 1;
-}
 

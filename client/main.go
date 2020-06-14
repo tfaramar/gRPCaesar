@@ -37,7 +37,6 @@ func validate(input string) (*Parsed, bool) {
 	parts := strings.Split(input, " ")
 	p := &Parsed{}
 
-	//add validation for text being alphabetical characters only
 	last := parts[len(parts)-1]
 	lasti, err := strconv.Atoi(last)
 
@@ -64,20 +63,20 @@ func main() {
 	var parsed *Parsed
 	var line string
 	var ok bool
-	fmt.Println("HI MAIN FUNC STARTED")
+
 	//Set up connection to server
 	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
-	c := NewCipherServiceClient(conn)
+	client := NewCipherServiceClient(conn) //this provides the client stub
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
 	defer cancel()
 
 	scanner := bufio.NewScanner(os.Stdin) //returns a new scanner to read from os.standard input
-	fmt.Println("Enter the sentence you'd like to encode, using only alphabetical characters, and a number. Type exit to exit program.")
+	fmt.Println("Enter the text you'd like to encode (using only alphabetical characters) followed by a number. Type exit to quit program.")
 	for scanner.Scan() {
 		line = scanner.Text()
 		if line == "exit" {
@@ -96,10 +95,10 @@ func main() {
 		fmt.Fprintln(os.Stderr, "reading standard input:", err)
 	}
 	
-	r, err := c.EncodeMessage(ctx, &Input{Text: parsed.text, Shift: parsed.shift})
+	res, err := client.EncodeMessage(ctx, &Input{Text: parsed.text, Shift: parsed.shift, Encode: false}) //req protobuffer object
 	if err != nil {
 		log.Fatalf("Could not encode: %v", err)
 	}
-	//Sunday debug: the below doesn't print anything, although GetMsg should return a string
-	fmt.Println(r.GetMsg())
+	
+	fmt.Println(res.GetMsg())
 }

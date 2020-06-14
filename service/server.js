@@ -14,9 +14,12 @@ const packageDefinition = protoLoader.loadSync(
 //cipher_proto variable points to cipher package, so it now has all the proto definitions
 const cipher_proto = grpc.loadPackageDefinition(packageDefinition).cipher;
 
+
 //Encode
-const encode = (text, shift) => {
-    text = text.toLowerCase();
+const encode = (request) => {
+    let text = request.text.toLowerCase();
+    let shift = request.shift;
+    
     const ciphered = [];
     const newKey = shift % 26;
     const alpha = 'abcdefghijklmnopqrstuvwxyz'.split('');
@@ -32,7 +35,7 @@ const encode = (text, shift) => {
 }
 
 const getNewLetter = (letter, key, alpha) => {
-    let newLetterIdx = alpha.indexOf(letter) + key;
+    const newLetterIdx = alpha.indexOf(letter) + key;
     return newLetterIdx <= 25 ? alpha[newLetterIdx] : alpha[-1 + (newLetterIdx % 25)];
 }
 
@@ -40,10 +43,11 @@ function encodeMessage(call, callback) {
     callback(null, encode(call.request));
 }
 
+
 //Decode
-const decode = (text, shift) => {
-    let decodeShift = (0 - shift);
-    return encode(text, decodeShift);
+const decode = (request) => {
+    request.shift = (0 - request.shift);
+    return encode(request);
 }
 
 function decodeMessage(call, callback) {

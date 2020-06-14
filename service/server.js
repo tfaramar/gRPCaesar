@@ -1,10 +1,9 @@
+const PROTO_PATH = __dirname + '/../cipher.proto';
 const grpc = require('grpc');
 const protoLoader = require('@grpc/proto-loader');
 
-// const cipherProto = grpc.load('../cipher.proto');
-// grpc.load deprecated, so the below options are suggested
 const packageDefinition = protoLoader.loadSync(
-    ('../cipher.proto'),
+    PROTO_PATH,
     {
         keepCase: true,
         longs: String,
@@ -12,44 +11,59 @@ const packageDefinition = protoLoader.loadSync(
         defaults: true,
         oneofs: true
     });
-const cipherservice = grpc.loadPackageDefinition(packageDefinition).cipherservice;
+//cipher_proto variable points to cipher package, so it now has all the proto definitions
+const cipher_proto = grpc.loadPackageDefinition(packageDefinition).cipher;
 
 //Encode
-const encodeText = (text, shift) => {
+const encode = (text, shift) => {
     text = text.toLowerCase();
-    let ciphered = [];
-    let newKey = shift % 26;
+    const ciphered = [];
+    const newKey = shift % 26;
+    const alpha = 'abcdefghijklmnopqrstuvwxyz'.split('');
+
     for (let letter of text) {
-        ciphered.push(getNewLetter(letter, newKey));
+        if (letter === ' ') {
+            ciphered.push(letter);
+        } else {
+            ciphered.push(getNewLetter(letter, newKey, alpha));
+        }  
     }
     return ciphered.join('');
 }
 
-const getNewLetter = (letter, key) => {
-    let newLetterUnicode = letter.charCodeAt() + key;
-    return newLetterUnicode <= 122 ? String.fromCharCode(newLetterUnicode) : String.fromCharCode(96 + (newLetterUnicode % 122));
+const getNewLetter = (letter, key, alpha) => {
+    let newLetterIdx = alpha.indexOf(letter) + key;
+    return newLetterIdx <= 25 ? alpha[newLetterIdx] : alpha[-1 + (newLetterIdx % 25)];
 }
 
+function encodeMessage(call, callback) {
+    callback(null, encode(call.request));
+}
 
 //Decode
-const decodeText = (text, shift) => {
+const decode = (text, shift) => {
     let decodeShift = (0 - shift);
-    return encodeText(text, decodeShift);
+    return encode(text, decodeShift);
 }
 
-let test = encodeText("hi this is a friend", 14)
-console.log(test);
-
-console.log(decodeText(test, 14));
-
+function decodeMessage(call, callback) {
+    callback(null, decode(call.request));
+}
 
 
-const server = new grpc.Server();
+//Build server
+const getServer = () => {
+    const server = new grpc.Server();
+    server.addService(cipher_proto.CipherService.service, {
+        encodeMessage: encodeMessage,
+        decodeMessage: decodeMessage
+    });
+    return server;
+}
 
-//REFACTOR THIS:
-// server.addService(cipherProto.cipher.CipherService.service, {});
+let routeServer = getServer();
+routeServer.bind('0.0.0.0:50051',
+    grpc.ServerCredentials.createInsecure());
+console.log('Server listening on Port 50051');
+routeServer.start();
 
-// server.bind('0.0.0.0:50051', 
-//     grpc.ServerCredentials.createInsecure());
-// console.log('Server running on Port 50051');
-// server.start();

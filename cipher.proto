@@ -10,6 +10,7 @@ service CipherService {
 message Input {
     string text = 1;
     int32 shift = 2;
+    bool encode = 3;
 }
 
 message Message {

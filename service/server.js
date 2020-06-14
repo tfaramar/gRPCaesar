@@ -17,6 +17,7 @@ const cipher_proto = grpc.loadPackageDefinition(packageDefinition).cipher;
 
 //Encode
 const encode = (request) => {
+    console.log(`Encode called with request: ${JSON.stringify(request)}`)
     let text = request.text.toLowerCase();
     let shift = request.shift;
     
@@ -31,6 +32,7 @@ const encode = (request) => {
             ciphered.push(getNewLetter(letter, newKey, alpha));
         }  
     }
+    console.log('About to return', ciphered.join(''));
     return ciphered.join('');
 }
 
@@ -40,6 +42,7 @@ const getNewLetter = (letter, key, alpha) => {
 }
 
 function encodeMessage(call, callback) {
+    // console.log("FROM ENCODE MSG CALL", encode(call.request));
     callback(null, encode(call.request));
 }
 

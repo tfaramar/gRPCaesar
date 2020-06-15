@@ -17,7 +17,7 @@ const cipher_proto = grpc.loadPackageDefinition(packageDefinition).cipher;
 
 //Encode
 const encode = (request) => {
-    console.log(`Encode called with request: ${JSON.stringify(request)}`)
+    //console.log(`Encode called with request: ${JSON.stringify(request)}`)
     let text = request.text.toLowerCase();
     let shift = request.shift;
     

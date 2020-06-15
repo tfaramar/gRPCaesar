@@ -41,22 +41,11 @@ const getNewLetter = (letter, key, alpha) => {
     return newLetterIdx <= 25 ? alpha[newLetterIdx] : alpha[-1 + (newLetterIdx % 25)];
 }
 
-//this func is passed a call obj for the RPC, which has the Input param as a property, and a cb to which we pass our returned Message
-// function encodeMessage(call, callback) {
-//     console.log("Encode call outputting:", encode(call.request));
-//     callback(null, encode(call.request)); //first null indicates no error
-// }
-
-
 //Decode
 const decode = (request) => {
     request.shift = (0 - request.shift);
     return encode(request);
 }
-
-// function decodeMessage(call, callback) {
-//     callback(null, decode(call.request));
-// }
 
 //Handle Request
 const handleRequest = (call, callback) => {
@@ -67,12 +56,11 @@ const handleRequest = (call, callback) => {
     }
 }
 
-
 //Run the gRPC server
 const getServer = () => {
     const server = new grpc.Server();
-    server.addService(cipher_proto.CipherService.service, { //uses svc descriptor, which is a property of the stub
-        encodeMessage: handleRequest, //implement svc methods
+    server.addService(cipher_proto.CipherService.service, { 
+        encodeMessage: handleRequest, 
         decodeMessage: handleRequest
     });
     return server;

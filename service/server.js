@@ -11,13 +11,13 @@ const packageDefinition = protoLoader.loadSync(
         defaults: true,
         oneofs: true
     });
-//cipher_proto variable points to cipher package, so it now has all the proto definitions
+
 const cipher_proto = grpc.loadPackageDefinition(packageDefinition).cipher;
 
-//Implement the service interface generated from the service definition
+
 //Encode
 const encode = (request) => {
-    console.log(`Encode called with request: ${JSON.stringify(request)}`)
+    //console.log(`Encode called with request: ${JSON.stringify(request)}`)
     let text = request.text.toLowerCase();
     let shift = request.shift;
     
@@ -32,7 +32,7 @@ const encode = (request) => {
             ciphered.push(getNewLetter(letter, newKey, alpha));
         }  
     }
-    //return must match proto definition Message = {msg: string} 
+
     return {msg: ciphered.join('')};
 }
 
@@ -66,8 +66,8 @@ const getServer = () => {
     return server;
 }
 
-let routeServer = getServer(); //create server instance
-routeServer.bind('0.0.0.0:50051', //specify address/port
+let routeServer = getServer(); 
+routeServer.bind('0.0.0.0:50051', 
     grpc.ServerCredentials.createInsecure());
 console.log('Server listening on Port 50051');
 routeServer.start();

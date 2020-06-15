@@ -1,13 +1,11 @@
 package main
 
 import (
-	"bufio" //implements buffered I/O by wrapping an io reader or writer object
 	"context"
+	"flag"
 	"fmt"   //implements formatted I/O
 	"log"
 	"os"    //provides a platform-independent interface to os functionality
-	"strconv"
-	"strings"
 	"time"
 	"unicode"
 	
@@ -18,6 +16,7 @@ import (
 type Parsed struct {
 	shift int32
 	text  string
+	encode bool
 }
 
 func isAlpha(s string) bool {
@@ -32,27 +31,30 @@ func isAlpha(s string) bool {
 	return isValid
 }
 
-func validate(input string) (*Parsed, bool) {
-	var lasti32 int32
-	parts := strings.Split(input, " ")
+func validate(text string, shift int, mode string) (*Parsed, bool) {
+	var shifti32 int32
 	p := &Parsed{}
 
-	last := parts[len(parts)-1]
-	lasti, err := strconv.Atoi(last)
+	shifti32 = int32(shift)
+	p.shift = shifti32
+	p.text = text
 
-	if err != nil {
-		fmt.Println("Expected input: text shift, invalid shift: must be integer")
-		fmt.Printf("Please try again: ")
+	if len(p.text) < 1 {
+		fmt.Println("invalid text: must be at least one character")
 		return nil, false
 	}
 
-	lasti32 = int32(lasti)
-	p.shift = lasti32
-	p.text = strings.Join(parts[:len(parts)-1], " ")
-
 	if !isAlpha(p.text) {
-		fmt.Println("Expected input: text shift, invalid text: must be alphabetical characters only")
-		fmt.Printf("Please try again: ")
+		fmt.Println("invalid text: must be alphabetical characters and spaces only")
+		return nil, false
+	}
+
+	if mode == "e" {
+		p.encode = true
+	} else if mode == "d" {
+		p.encode = false
+	} else {
+		fmt.Printf("mode flag should be e or d, not %s\n", mode)
 		return nil, false
 	}
 
@@ -60,9 +62,11 @@ func validate(input string) (*Parsed, bool) {
 }
 
 func main() {
-	var parsed *Parsed
-	var line string
+	var text string
+	var shift int
+	var mode string
 	var ok bool
+	var p *Parsed 
 
 	//Set up connection to server
 	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure(), grpc.WithBlock())
@@ -70,32 +74,22 @@ func main() {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
-	client := NewCipherServiceClient(conn) //this provides the client stub
+	client := NewCipherServiceClient(conn) //provides the client stub
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
 	defer cancel()
 
-	scanner := bufio.NewScanner(os.Stdin) //returns a new scanner to read from os.standard input
-	fmt.Println("Enter the text you'd like to encode (using only alphabetical characters) followed by a number. Type exit to quit program.")
-	for scanner.Scan() {
-		line = scanner.Text()
-		if line == "exit" {
-			os.Exit(0)
-		}
+	flag.StringVar(&text, "t", "hello world", "t (text) should be a string (enclosed by \" \") of only alphabetical characters and spaces")
+	flag.IntVar(&shift, "s", 0, "s (shift) should be an integer")
+	flag.StringVar(&mode, "m", "e", "m (mode) should be a character e or d: e to encode text, d to decode text")
+	flag.Parse()
 
-		parsed, ok = validate(line)
-		if !ok {
-			//keep scanning, input not valid
-			continue
-		} else {
-			break
-		}
-	}
-	if err := scanner.Err(); err != nil { //returns first non-EOF error encountered by scanner
-		fmt.Fprintln(os.Stderr, "reading standard input:", err)
-	}
+	p, ok = validate(text, shift, mode)
+	if !ok {
+		os.Exit(0)
+	} 
 	
-	res, err := client.EncodeMessage(ctx, &Input{Text: parsed.text, Shift: parsed.shift, Encode: false}) //req protobuffer object
+	res, err := client.EncodeMessage(ctx, &Input{Text: p.text, Shift: p.shift, Encode: p.encode})
 	if err != nil {
 		log.Fatalf("Could not encode: %v", err)
 	}

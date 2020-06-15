@@ -1,4 +1,4 @@
-module main
+module requirements
 
 go 1.14
 

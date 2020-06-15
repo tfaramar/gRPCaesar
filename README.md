@@ -4,6 +4,10 @@
 
 gRPCaesar is a Go gRPC client that connects to a Node.js gRPC service to encode and decode text using the Caesar cipher encryption technique.
 
+## How the service works
+
+<img src="assets/gRPCaesar_diagram.png">
+
 ## Setting flag values
 
 | Flag       | Description   | Value    | Default Value |

@@ -7,9 +7,11 @@ gRPCaesar is a microservice built with gRPC. It has two components:
 1. gRPCaesar client: Written in Go, the client accepts input from command-line flags and makes a request to the Cipher service with that input.
 2. Cipher service: Written in Node.js, the service encodes or decodes the received text using the Caesar cipher encryption technique.
 
-## How the service works
+## Service Description
 
-The Cipher service interface defined in the cipher.proto file includes two simple RPC service methods: EncodeMessage and DecodeMessage.
+The Cipher service interface defined in the cipher.proto file includes two simple RPC service methods: EncodeMessage and DecodeMessage. 
+
+Each method accepts a request consisting of a string text, an integer shift, and a character denoting encryption or decryption. Both methods return a response consisting of a string message.
 
 <img src="assets/gRPCaesar_diagram.png">
 
@@ -67,4 +69,4 @@ go test
 
 ### Learn more
 
-For more information about gRPC in Node.js and Go, see [the official gRPC documentation](https://grpc.io/docs/).
+For more information on gRPC with Node.js and Go, see [the official gRPC documentation](https://grpc.io/docs/).

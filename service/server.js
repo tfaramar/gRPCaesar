@@ -60,8 +60,7 @@ const handleRequest = (call, callback) => {
 const getServer = () => {
     const server = new grpc.Server();
     server.addService(cipher_proto.CipherService.service, { 
-        encodeMessage: handleRequest, 
-        decodeMessage: handleRequest
+        processMessage: handleRequest
     });
     return server;
 }

@@ -11,7 +11,7 @@ gRPCaesar is a microservice built with gRPC. It has two components:
 
 The Cipher service interface defined in the cipher.proto file includes one simple RPC service method: ProcessMessage. 
 
-This method accepts a request consisting of a string text, an integer shift, and a boolean denoting encryption or decryption. It return a response consisting of a string message.
+This method accepts a request consisting of a string text, an integer shift, and a boolean denoting encryption or decryption. It returns a response consisting of a string message.
 
 <img src="assets/gRPCaesar_diagram.png">
 

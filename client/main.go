@@ -89,7 +89,7 @@ func main() {
 		os.Exit(0)
 	} 
 	
-	res, err := client.EncodeMessage(ctx, &Input{Text: p.text, Shift: p.shift, Encode: p.encode})
+	res, err := client.ProcessMessage(ctx, &Input{Text: p.text, Shift: p.shift, Encode: p.encode})
 	if err != nil {
 		log.Fatalf("Could not encode: %v", err)
 	}
